@@ -6,6 +6,8 @@ import emanondev.itemedit.utility.CompleteUtility;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.Damageable;
+import org.bukkit.inventory.meta.ItemMeta;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Collections;
@@ -27,8 +29,15 @@ public class Damage extends SubCmd {
                 throw new IllegalArgumentException("Wrong param number");
             }
             short amount = Short.parseShort(args[1]);
-            amount = (short) Math.max(0, Math.min(amount, item.getType().getMaxDurability()));
-            item.setDurability(amount);
+            int max;
+            ItemMeta meta = item.getItemMeta();
+            if (meta instanceof Damageable && ((Damageable) meta).hasMaxDamage()) {
+                max = ((Damageable) meta).getMaxDamage();
+            } else {
+                max = item.getType().getMaxDurability();
+            }
+            short newAmount = (short) Math.max(0, Math.min(amount, max));
+            item.setDurability(newAmount);
             updateView(p);
         } catch (Exception e) {
             onFail(p, alias);
